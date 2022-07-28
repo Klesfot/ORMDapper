@@ -15,4 +15,8 @@
     <PackageReference Include="Z.Dapper.Plus" Version="4.0.31" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
+
 </Project>
