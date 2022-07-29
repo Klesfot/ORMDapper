@@ -14,10 +14,10 @@ namespace ORMDapper
         int DeleteOrder(int id);
         IEnumerable<Product> FetchAllProducts();
 
-        IEnumerable<Order> FetchOrders(int month = 0, OrderStatus status = OrderStatus.NotStarted, int year = 1980,
+        IEnumerable<Order> FetchOrders(int? month = null, int? year = null, OrderStatus status = OrderStatus.Null,
             Product? product = null, bool useStoredProcedure = false);
 
-        int DeleteOrders(int month = 0, OrderStatus status = OrderStatus.NotStarted, int year = 1980,
+        int DeleteOrders(int? month = null, int? year = null, OrderStatus status = OrderStatus.Null,
             Product? product = null, bool useStoredProcedure = false);
     }
 }

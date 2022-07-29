@@ -1,5 +1,5 @@
 using System.Data.SqlClient;
-using Dapper;
+using DapperQueryBuilder;
 using Moq;
 using ORMDapper.Data;
 using ORMDapper.Model;
@@ -14,10 +14,12 @@ namespace ORMDapper.Tests
     {
         private IDbController _dbController;
         private Mock<IDapperRepository> _repositoryMock;
+        private SqlConnection _fakeSqlConnection;
 
         [SetUp]
         public void OnSetup()
         {
+            _fakeSqlConnection = new SqlConnection("Data Source=EPGETBIW03B7;Initial Catalog=ORMFundamentals;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
             _repositoryMock = new Mock<IDapperRepository>();
             _dbController = new DbController(_repositoryMock.Object);
         }
@@ -426,6 +428,62 @@ namespace ORMDapper.Tests
             Assert.That(result, Is.EqualTo(productList));
         }
 
+        [Test]
+        public void FetchAllProducts_NoProductsInRepo_ReturnsListWithZeroElements()
+        {
+            var sql = @"SELECT * FROM [Product]";
+            var productList = new List<Product>();
+            _repositoryMock.Setup(r => r.Query<Product>(sql)).Returns(productList);
+
+            var result = _dbController.FetchAllProducts();
+
+            Assert.That(result.Count(), Is.EqualTo(productList.Count));
+        }
+
+        [Test]
+        public void FetchOrders_AllConditionFieldsFilled_QueriesCorrectParameters()
+        {
+            var orderList = GetTestOrderList();
+            FormattableString sql =
+                $@"SELECT [OrderId],[Status],[CreatedDate],[UpdatedDate],[ProductId] FROM [Order] WHERE 1=1";
+            var param = new
+            {
+                CreatedDate = new DateTime(1799, 7, 1),
+                UpdatedDate = new DateTime(1799, 7, 1),
+                Status = OrderStatus.NotStarted.ToString(),
+                ProductId = 0
+            };
+            var queryBuilder = new QueryBuilder(_fakeSqlConnection, sql);
+            _repositoryMock.Setup(r => r.QueryBuilder(It.IsAny<FormattableString>())).Returns(queryBuilder);
+            _repositoryMock.Setup(r => r.Query<Order>(It.IsAny<string>(), It.Is<object>(o => o.JsonMatches(param)))).Returns(orderList);
+
+            _dbController.FetchOrders(7, 1799, OrderStatus.NotStarted, GetSingleTestProduct());
+
+            _repositoryMock.Verify(r => r.Query<Order>(It.IsAny<string>(), It.Is<object>(o => o.JsonMatches(param))), Times.Once);
+        }
+
+        [Test]
+        public void FetchOrders_AllConditionFieldsFilled_ReturnsCorrectOrders()
+        {
+            var orderList = GetTestOrderList();
+            FormattableString sql =
+                $@"SELECT [OrderId],[Status],[CreatedDate],[UpdatedDate],[ProductId] FROM [Order] WHERE 1=1";
+            var param = new
+            {
+                CreatedDate = new DateTime(1799, 7, 1),
+                UpdatedDate = new DateTime(1799, 7, 1),
+                Status = OrderStatus.NotStarted.ToString(),
+                ProductId = 0
+            };
+            var queryBuilder = new QueryBuilder(_fakeSqlConnection, sql);
+            _repositoryMock.Setup(r => r.QueryBuilder(It.IsAny<FormattableString>())).Returns(queryBuilder);
+            _repositoryMock.Setup(r => r.Query<Order>(It.IsAny<string>(), It.Is<object>(o => o.JsonMatches(param)))).Returns(orderList);
+
+            var result = _dbController.FetchOrders(7, 1799, OrderStatus.NotStarted, GetSingleTestProduct());
+
+            Assert.That(result, Is.EqualTo(orderList));
+        }
+
         private void InsertSingleProductIntoMockRepository()
         {
             var productId = 0;
@@ -469,6 +527,19 @@ namespace ORMDapper.Tests
                 UpdatedDate = null,
                 ProductId = 0
             };
+        }
+
+        private static IEnumerable<Order> GetTestOrderList()
+        {
+            var orderList = new List<Order>();
+            var order0 = GetSingleTestOrder();
+            var order1 = GetSingleTestOrder();
+            order0.UpdatedDate = DateTime.Today;
+            order1.UpdatedDate = DateTime.Today;
+            order1.Status = nameof(OrderStatus.InProgress);
+            orderList.Add(order0);
+            orderList.Add(order1);
+            return orderList;
         }
     }
 }

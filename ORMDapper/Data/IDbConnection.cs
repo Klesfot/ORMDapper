@@ -2,7 +2,7 @@
 
 namespace ORMDapper.Data;
 
-public interface IDapperRepository
+public interface IDbConnection
 {
     IEnumerable<T> Query<T>(string sql);
     IEnumerable<T> Query<T>(string sql, object param = null);

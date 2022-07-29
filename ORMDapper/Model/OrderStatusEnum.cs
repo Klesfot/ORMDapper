@@ -8,5 +8,6 @@ public enum OrderStatus
     Arrived,
     Unloading,
     Cancelled,
-    Done
+    Done,
+    Null
 }
