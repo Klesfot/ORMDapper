@@ -3,6 +3,5 @@
 public interface IDapperRepository
 {
     IEnumerable<T> Query<T>(string sql);
-    int Execute<T>(string sql, object param);
-
+    int Execute<T>(string sql, object param = null);
 }

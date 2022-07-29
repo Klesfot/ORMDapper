@@ -15,7 +15,7 @@ public class DapperRepository : IDapperRepository
         }
     }
 
-    public int Execute<T>(string sql, object param)
+    public int Execute<T>(string sql, object param = null)
     {
         using (var conn = new SqlConnection(ConnectionString))
         {

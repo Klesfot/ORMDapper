@@ -5,7 +5,7 @@ namespace ORMDapper
 {
     public class DbController : IDbController
     {
-        private IDapperRepository _repository;
+        private readonly IDapperRepository _repository;
         public DbController(IDapperRepository repository)
         {
             _repository = repository;
@@ -13,22 +13,57 @@ namespace ORMDapper
 
         public int AddProduct(Product product)
         {
-            throw new NotImplementedException();
+            if (product == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var sql = @"INSERT INTO Product (Name, Description, Weight, Height, Width, Length) VALUES(@Name, @Description, @Weight, @Height, @Width, @Length)";
+            var param = new
+                { product.Name, product.Description, product.Weight, product.Height, product.Width, product.Length };
+            return _repository.Execute<Product>(sql, param);
         }
 
         public Product GetProduct(int id)
         {
-            throw new NotImplementedException();
+            var sql = $@"SELECT ProductId, [Name], [Description], [Weight], [Height], [Width], [Length] FROM [Product] WHERE [ProductId] = {id};";
+            return _repository.Query<Product>(sql).FirstOrDefault();
         }
 
-        public int UpdateProduct(Product product)
+        public int UpdateProduct(Product product, Product updatedProduct)
         {
-            throw new NotImplementedException();
+            if (product == null || updatedProduct == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var sql = $@"
+                UPDATE Product 
+                SET [Name] = @Name,
+                    [Description] = @Description,
+                    [Weight] = @Weight,
+                    [Height] = @Height,
+                    [Width] = @Width,
+                    [Length] = @Length 
+                WHERE ProductId = {product.ProductId}";
+            var param = new
+            {
+                updatedProduct.Name,
+                updatedProduct.Description,
+                updatedProduct.Weight,
+                updatedProduct.Height,
+                updatedProduct.Width,
+                updatedProduct.Length
+            };
+
+            return _repository.Execute<Product>(sql, param);
         }
 
-        public int DeleteProduct(Product product)
+        public int DeleteProduct(int id)
         {
-            throw new NotImplementedException();
+            var sql = @"DELETE FROM Product WHERE ProductId = @ProductId";
+            var param = new { ProductId = id };
+            return _repository.Execute<Product>(sql, param);
         }
 
         public int AddOrder(Order order)
@@ -36,17 +71,17 @@ namespace ORMDapper
             throw new NotImplementedException();
         }
 
-        public Product GetOrder(int id)
+        public Product GetOrder(object param)
         {
             throw new NotImplementedException();
         }
 
-        public int UpdateOrder(Order order)
+        public int UpdateOrder(Order order, Order updatedOrder)
         {
             throw new NotImplementedException();
         }
 
-        public int DeleteOrder(Order order)
+        public int DeleteOrder(int id)
         {
             throw new NotImplementedException();
         }

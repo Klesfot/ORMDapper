@@ -6,12 +6,12 @@ namespace ORMDapper
     {
         int AddProduct(Product product);
         Product GetProduct(int id);
-        int UpdateProduct(Product product);
-        int DeleteProduct(Product product);
+        int UpdateProduct(Product product, Product updatedProduct);
+        int DeleteProduct(int id);
         int AddOrder(Order order);
-        Product GetOrder(int id);
-        int UpdateOrder(Order order);
-        int DeleteOrder(Order order);
+        Product GetOrder(object param);
+        int UpdateOrder(Order order, Order updatedOrder);
+        int DeleteOrder(int id);
         IEnumerable<Product> FetchAllProducts();
 
         IEnumerable<Order> FetchOrders(int month = 0, OrderStatus status = OrderStatus.NotStarted, int year = 1980,
