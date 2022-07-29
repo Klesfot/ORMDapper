@@ -9,7 +9,7 @@ namespace ORMDapper
         int UpdateProduct(Product product, Product updatedProduct);
         int DeleteProduct(int id);
         int AddOrder(Order order);
-        Product GetOrder(object param);
+        Order GetOrder(int id);
         int UpdateOrder(Order order, Order updatedOrder);
         int DeleteOrder(int id);
         IEnumerable<Product> FetchAllProducts();
