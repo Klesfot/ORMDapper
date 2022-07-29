@@ -118,16 +118,17 @@ namespace ORMDapper
 
         public IEnumerable<Product> FetchAllProducts()
         {
-            throw new NotImplementedException();
+            var sql = @"SELECT * FROM [Product]";
+            return _repository.Query<Product>(sql);
         }
 
-        public IEnumerable<Order> FetchOrders(int month = 0, OrderStatus status = OrderStatus.NotStarted, int year = 1980,
+        public IEnumerable<Order> FetchOrders(int month = 0, OrderStatus status = OrderStatus.NotStarted, int year = 1970,
             Product? product = null, bool useStoredProcedure = false)
         {
             throw new NotImplementedException();
         }
 
-        public int DeleteOrders(int month = 0, OrderStatus status = OrderStatus.NotStarted, int year = 1980, Product? product = null,
+        public int DeleteOrders(int month = 0, OrderStatus status = OrderStatus.NotStarted, int year = 1970, Product? product = null,
             bool useStoredProcedure = false)
         {
             throw new NotImplementedException();

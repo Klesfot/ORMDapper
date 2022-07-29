@@ -389,7 +389,43 @@ namespace ORMDapper.Tests
 
             Assert.That(result, Is.EqualTo(0));
         }
-        
+
+        [Test]
+        public void FetchAllProducts_ProductsPresentInRepo_QueriesAllProducts()
+        {
+            var sql = @"SELECT * FROM [Product]";
+            var productList = GetTestProductList();
+            _repositoryMock.Setup(r => r.Query<Product>(sql)).Returns(productList);
+
+            _dbController.FetchAllProducts();
+
+            _repositoryMock.Verify(r => r.Query<Product>(sql));
+        }
+
+        [Test]
+        public void FetchAllProducts_ProductsPresentInRepo_ReturnsAllProductsInRepo()
+        {
+            var sql = @"SELECT * FROM [Product]";
+            var productList = GetTestProductList();
+            _repositoryMock.Setup(r => r.Query<Product>(sql)).Returns(productList);
+
+            var result = _dbController.FetchAllProducts();
+
+            Assert.That(result, Is.EqualTo(productList));
+        }
+
+        [Test]
+        public void FetchAllProducts_OneProductPresentInRepo_ReturnsOneProductInRepo()
+        {
+            var sql = @"SELECT * FROM [Product]";
+            var productList = new List<Product>(){GetSingleTestProduct()};
+            _repositoryMock.Setup(r => r.Query<Product>(sql)).Returns(productList);
+
+            var result = _dbController.FetchAllProducts();
+
+            Assert.That(result, Is.EqualTo(productList));
+        }
+
         private void InsertSingleProductIntoMockRepository()
         {
             var productId = 0;
@@ -410,6 +446,17 @@ namespace ORMDapper.Tests
                 Width = .5m,
                 Length = .5m
             };
+        }
+
+        private static IEnumerable<Product> GetTestProductList()
+        {
+            var productList = new List<Product>();
+            var product0 = GetSingleTestProduct();
+            var product1 = GetSingleTestProduct();
+            product1.ProductId = 1;
+            productList.Add(product0);
+            productList.Add(product1);
+            return productList;
         }
 
         private static Order GetSingleTestOrder()
