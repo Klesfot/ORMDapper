@@ -484,6 +484,28 @@ namespace ORMDapper.Tests
             Assert.That(result, Is.EqualTo(orderList));
         }
 
+        [Test]
+        public void DeleteOrders_AllConditionFieldsFilled_ExecutesCorrectQuery()
+        {
+            var orderList = GetTestOrderList();
+            FormattableString sql =
+                $@"DELETE FROM [Order] WHERE 1=1";
+            var param = new
+            {
+                CreatedDate = new DateTime(1799, 7, 1),
+                UpdatedDate = new DateTime(1799, 7, 1),
+                Status = OrderStatus.NotStarted.ToString(),
+                ProductId = 0
+            };
+            var queryBuilder = new QueryBuilder(_fakeSqlConnection, sql);
+            _repositoryMock.Setup(r => r.QueryBuilder(It.IsAny<FormattableString>())).Returns(queryBuilder);
+            _repositoryMock.Setup(r => r.Query<Order>(It.IsAny<string>(), It.Is<object>(o => o.JsonMatches(param)))).Returns(orderList);
+
+            _dbController.DeleteOrders(7, 1799, OrderStatus.NotStarted, GetSingleTestProduct());
+
+            _repositoryMock.Verify(r => r.Execute<Order>(It.IsAny<string>(), It.Is<object>(o => o.JsonMatches(param))), Times.Once);
+        }
+
         private void InsertSingleProductIntoMockRepository()
         {
             var productId = 0;

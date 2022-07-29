@@ -187,7 +187,68 @@ namespace ORMDapper
         public int DeleteOrders(int? month = null, int? year = null, OrderStatus status = OrderStatus.Null, Product? product = null,
             bool useStoredProcedure = false)
         {
-            throw new NotImplementedException();
+            if (month == null && year == null && status == OrderStatus.Null && product == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            var orderParams = new Order
+            {
+                CreatedDate = DateTime.UnixEpoch,
+                UpdatedDate = DateTime.UnixEpoch,
+                Status = nameof(OrderStatus.Null),
+                ProductId = -1
+            };
+            var query = _repository.QueryBuilder($@"DELETE FROM [Order] WHERE 1=1");
+
+            if (status != OrderStatus.Null)
+            {
+                query += $" AND [Status] = @Status";
+
+                orderParams.Status = status.ToString();
+            }
+
+            if (month == null && year != null)
+            {
+                query += $" AND YEAR([CreatedDate]) = YEAR(@CreatedDate) OR YEAR([UpdatedDate]) = YEAR(@UpdatedDate)";
+
+                orderParams.CreatedDate = new DateTime((int)year, 1, 1);
+                orderParams.UpdatedDate = new DateTime((int)year, 1, 1);
+            }
+            else if (year == null && month != null)
+            {
+                query += $" AND MONTH([CreatedDate]) = MONTH(@CreatedDate) OR MONTH([UpdatedDate]) = MONTH(@UpdatedDate)";
+
+                orderParams.CreatedDate = new DateTime(1900, (int)month, 1);
+                orderParams.UpdatedDate = new DateTime(1900, (int)month, 1);
+            }
+            else if (year != null && month != null)
+            {
+                query += $" AND MONTH([CreatedDate]) = MONTH(@CreatedDate) OR MONTH([UpdatedDate]) = MONTH(@UpdatedDate)";
+                query += $" AND YEAR([CreatedDate]) = YEAR(@CreatedDate) OR YEAR([UpdatedDate]) = YEAR(@UpdatedDate)";
+
+                orderParams.CreatedDate = new DateTime((int)year, (int)month, 1);
+                orderParams.UpdatedDate = new DateTime((int)year, (int)month, 1);
+            }
+
+            if (product != null)
+            {
+                query += $" AND [ProductId] = @ProductId";
+
+                orderParams.ProductId = product.ProductId;
+            }
+
+            if (useStoredProcedure) { }
+
+            var param = new
+            {
+                orderParams.CreatedDate,
+                orderParams.UpdatedDate,
+                orderParams.Status,
+                orderParams.ProductId
+            };
+
+            return _repository.Execute<Order>(query.Sql, param);
         }
     }
 }
